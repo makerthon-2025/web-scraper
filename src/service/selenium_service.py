@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 import threading
+import requests
 
 lock = threading.Lock()
 
@@ -76,7 +77,7 @@ def get_content(url):
 
         arr = []
 
-        div_elements = soup.find('article', class_='article').find_all('div', class_='article-content')
+        div_elements = soup.find_all('div', class_='article-content')
         next_page = soup.find('a', class_='page-item next')['href']
 
         for item in div_elements:
@@ -99,7 +100,7 @@ def get_content(url):
 
             soup = BeautifulSoup(html, 'lxml')
 
-            div_elements = soup.find('div', class_='article').find_all('div', class_='article-content')
+            div_elements = soup.find_all('div', class_='article-content')
             next_page = soup.find('a', class_='page-item next')
 
             if next_page is None: break
@@ -121,5 +122,84 @@ def get_content(url):
             print(f"next_page: {next_page}")
 
         return arr
+    except Exception as e:
+        print(f"Error: {e}")
+
+def update_content(url, content_data):
+    out_content= []
+    try:
+        response = requests.get(url)
+        html = response.text
+
+        soup = BeautifulSoup(html, 'lxml')
+
+
+        arr = []
+
+        div_elements = soup.find_all('div', class_='article-content')
+        next_page = soup.find('a', class_='page-item next')['href']
+
+        def foo():
+            nonlocal arr
+            nonlocal content_data
+            nonlocal out_content
+            for item in arr:
+                for content_item in content_data:
+                    if (content_item['name'] == item['name']):
+                        print(f"Đã có nội dung {item['name']}")
+                        return False
+                
+                out_content.append({
+                    'name': item['name'],
+                    'link': item['link'],
+                    'content': item['content']
+                })
+                print(f"Đã cập nhật nội dung {item['name']}")
+            
+            arr = []
+            return True
+
+        for item in div_elements:
+            # Lấy tên và link
+            name = item.find('h3').find('a').text.strip()
+            link = item.find('h3').find('a')['href']
+            content = item.find('div').text.strip()
+
+            arr.append({
+                'name': name,
+                'link': link,
+                'content': content
+            })
+
+        while next_page:
+            if not foo():
+                break
+
+            response = requests.get(f"https://dantri.com.vn{next_page}")
+            html = response.text
+            soup = BeautifulSoup(html, 'lxml')
+
+            div_elements = soup.find_all('div', class_='article-content')
+            next_page = soup.find('a', class_='page-item next')
+
+            if next_page is None: break
+
+            next_page = next_page['href']
+
+            for item in div_elements:
+                # Lấy tên và link
+                name = item.find('h3').find('a').text.strip()
+                link = item.find('h3').find('a')['href']
+                content = item.find('div').text.strip()
+
+                arr.append({
+                    'name': name,
+                    'link': link,
+                    'content': content
+                })
+
+            print(f"next_page: {next_page}")
+
+        return out_content
     except Exception as e:
         print(f"Error: {e}")
