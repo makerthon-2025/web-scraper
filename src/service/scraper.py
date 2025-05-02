@@ -21,30 +21,33 @@ def load_content_service():
     success = []
     
     while(len(cate) > 0):
-        if thread_num < 5:
+        if thread_num < 4:
             first_item = cate.pop(0)
             threading.Thread(target=__process_item, args=(first_item, error, success)).start()
 
         save_file('cache/remain.json', cate)
-        time.sleep(1)
+        time.sleep(0.5)
 
     print("Tất cả các thread đã hoàn thành.")
 
 def update_content_service():
     sucess = read_file('cache/success.json')
+    update_content = []
 
     for i in range(1, len(sucess)):
         try:
             content = read_file(f"content/{sucess[i]['name']}.json")
             uc = update_content(sucess[i]['link'], content.copy())
             for item in uc:
-                
-                    content.append(item)
-                    print(f"Đã thêm {item['name']} vào file content/{sucess[i]['name']}.json")
-                    save_file(f"content/{sucess[i]['name']}.json", content)
+                update_content.append(item)
+                content.append(item)
+                print(f"Đã thêm {item['name']} vào file content/{sucess[i]['name']}.json")
+                save_file(f"content/{sucess[i]['name']}.json", content)
         except Exception as e:
             continue
 
+    save_file('cache/update.json', update_content)
+    
 # --------------------------------------------------------------------------------
 # ========================= PRIVATE FUNCTION =========================
 # --------------------------------------------------------------------------------

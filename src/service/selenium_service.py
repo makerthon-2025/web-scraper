@@ -57,7 +57,7 @@ def get_category():
 
     return arr
 
-def get_content(url):
+def get_content(url, type):
     try:
         # Cấu hình Selenium
         chrome_options = Options()
