@@ -1,5 +1,8 @@
 from src.controller import scraper_controller
 
+def load_rss_header():
+    scraper_controller.load_rss_controller()
+
 def load_header():
     scraper_controller.load_header_controller()
 

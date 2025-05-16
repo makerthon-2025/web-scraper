@@ -3,10 +3,15 @@ from src.helper.file_helper import save_file, read_file
 import threading
 import time
 import os
+from src.helper.rss_reader import get_rss_dashboard_from_dantri
 # --------------------------------------------------------------------------------
 
 lock = threading.Lock()
 thread_num = 0
+
+def load_rss_service():
+    dantri = get_rss_dashboard_from_dantri()
+    save_file('dantri_category.json', dantri)
 
 def load_header_service():
     cate = get_category()
@@ -21,32 +26,36 @@ def load_content_service():
     success = []
     
     while(len(cate) > 0):
-        if thread_num < 4:
-            first_item = cate.pop(0)
-            threading.Thread(target=__process_item, args=(first_item, error, success)).start()
+        try:
+            if thread_num < 4:
+                first_item = cate.pop(0)
+                threading.Thread(target=__process_item, args=(first_item, error, success)).start()
 
-        save_file('cache/remain.json', cate)
-        time.sleep(0.5)
+            save_file('cache/remain.json', cate)
+            time.sleep(0.5)
+        except:
+            continue
 
     print("Tất cả các thread đã hoàn thành.")
 
 def update_content_service():
     sucess = read_file('cache/success.json')
-    update_content = []
+    update_content_data = []
 
     for i in range(1, len(sucess)):
         try:
             content = read_file(f"content/{sucess[i]['name']}.json")
             uc = update_content(sucess[i]['link'], content.copy())
             for item in uc:
-                update_content.append(item)
+                update_content_data.append(item)
                 content.append(item)
                 print(f"Đã thêm {item['name']} vào file content/{sucess[i]['name']}.json")
                 save_file(f"content/{sucess[i]['name']}.json", content)
+                save_file('cache/update.json', update_content_data)
         except Exception as e:
             continue
 
-    save_file('cache/update.json', update_content)
+    save_file('cache/update.json', update_content_data)
     
 # --------------------------------------------------------------------------------
 # ========================= PRIVATE FUNCTION =========================

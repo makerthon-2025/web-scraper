@@ -1,4 +1,11 @@
-from src.service.scraper import load_header_service, load_content_service, update_content_service
+from src.service.scraper import load_header_service, load_content_service, update_content_service, load_rss_service
+
+def load_rss_controller():
+    try:
+        load_rss_service()
+        print("\033[32mTải rss dashboard thành công!\033[0m")
+    except Exception as e:
+        print(f"\033[31mLỗi khi tải rss dashboard: {e}\033[0m")
 
 def load_header_controller():
     try:
