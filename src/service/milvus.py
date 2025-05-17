@@ -9,9 +9,6 @@ thread_num = 0
 
 def insert_data_service():
     content_list = os.listdir("resource/data/content") 
-    content_list.reverse()
-    
-    # __insert_data(content_file_item)
 
     for item in content_list:
         content_file_item = file_helper.read_file(f"content/{item}")
